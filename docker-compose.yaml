@@ -1,0 +1,54 @@
+services:
+  # ---------------- BACKEND (Django) ----------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: app-backend:latest
+    container_name: app-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - notification_service
+
+  # ---------------- NOTIFICATION SERVICE (Flask) ----------------
+  notification_service:
+    build:
+      context: ./notification_service
+      dockerfile: Dockerfile
+    image: app-notification_service:latest
+    container_name: app-notification_service
+    ports:
+      - "5000:5000"
+
+  # ---------------- FRONTEND (React) ----------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: app-frontend:latest
+    container_name: app-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  # ---------------- DATABASE (PostgreSQL) ----------------
+  db:
+    image: postgres:15
+    container_name: app-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: usersdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+# ---------------- VOLUMES ----------------
+volumes:
+  pg_data:
